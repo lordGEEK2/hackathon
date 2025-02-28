@@ -87,6 +87,12 @@
             text-decoration: none;
             font-weight: bold;
         }
+
+        /* Disable button during the process */
+        .btn.disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -94,8 +100,52 @@
     <div class="card">
         <label for="url">Enter the URL:</label>
         <input type="url" class="url" placeholder="Enter the URL">
-        <button class="btn"><a href="#">Start</a></button>
+        <button class="btn" id="startButton"><a href="#">Start</a></button>
     </div>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Select the button and input field
+            const b = document.getElementById("startButton");
+            const startButton = document.querySelector("#startButton");
+            const urlInput = document.querySelector(".url");
+
+            startButton.addEventListener("click", function (event) {
+                event.preventDefault(); // Prevent default button behavior
+
+                const url = urlInput.value.trim();
+
+                if (url === "") {
+                    alert("Please enter a valid URL.");
+                    return;
+                }
+
+                // Disable button to prevent multiple clicks
+                startButton.classList.add("disabled");
+                startButton.innerHTML = "Scanning...";
+
+                // Send URL to backend for scanning
+                fetch("http://127.0.0.1:5000/", {  // Update with your Flask backend URL
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ url: url })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(`Scan started: ${data.message}`);
+                    startButton.innerHTML = "Start";  // Reset the button text after scan starts
+                    startButton.classList.remove("disabled"); // Enable button
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("An error occurred. Please try again.");2
+                    startButton.innerHTML = "Start";  // Reset the button text on error
+                    startButton.classList.remove("disabled"); // Enable button
+                });
+            });
+        });
+    </script>
 </body>
 </html>
